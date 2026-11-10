@@ -18,6 +18,9 @@ permissions:
 jobs:
   windows:
     runs-on: windows-latest
+    env:
+      # scripts/tauri.mjs は成果物を PC ローカルへ逃がすが、CI では tauri-action が探す標準の場所に出す
+      CARGO_TARGET_DIR: ${{ github.workspace }}/src-tauri/target
     steps:
       - uses: actions/checkout@v4
 
