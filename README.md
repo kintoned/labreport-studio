@@ -91,10 +91,10 @@ git push --follow-tags
 
 初回だけ、リポジトリの Secrets に署名鍵を登録する（鍵は `~/.tauri/labreport-studio.key`。**リポジトリには入れない**。
 失くすと既存のインストール先へ更新を配れなくなるので、安全な場所に控えを取ること）。
+鍵にパスワードは付けていないので `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` は登録不要（付けた場合のみ登録する）。
 
 ```bash
 gh secret set TAURI_SIGNING_PRIVATE_KEY < ~/.tauri/labreport-studio.key
-gh secret set TAURI_SIGNING_PRIVATE_KEY_PASSWORD --body ""
 ```
 
 自動更新は公開リポジトリの Releases を前提にしている（非公開リポジトリでは認証無しでダウンロードできない）。

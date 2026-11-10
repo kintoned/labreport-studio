@@ -3,7 +3,7 @@
 #
 # 必要なリポジトリ Secrets:
 #   TAURI_SIGNING_PRIVATE_KEY           更新ファイル署名用の秘密鍵（~/.tauri/labreport-studio.key の中身）
-#   TAURI_SIGNING_PRIVATE_KEY_PASSWORD  鍵のパスワード（無ければ空）
+#   TAURI_SIGNING_PRIVATE_KEY_PASSWORD  鍵にパスワードを付けた場合のみ（無ければ登録不要）
 name: release
 
 on:
