@@ -1,0 +1,60 @@
+# バージョンタグ (v1.2.3) を push すると Windows 用インストーラをビルドし、
+# GitHub Releases に公開する。アプリは起動時に releases/latest/download/latest.json を見て自動更新する。
+#
+# 必要なリポジトリ Secrets:
+#   TAURI_SIGNING_PRIVATE_KEY           更新ファイル署名用の秘密鍵（~/.tauri/labreport-studio.key の中身）
+#   TAURI_SIGNING_PRIVATE_KEY_PASSWORD  鍵のパスワード（無ければ空）
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+
+      - run: npm ci
+
+      - name: Rust unit tests
+        run: cargo test --lib --manifest-path src-tauri/Cargo.toml
+
+      - name: Check that the tag matches the app version
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run: |
+          v=$(node -p "require('./src-tauri/tauri.conf.json').version")
+          if [ "v$v" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::タグ $GITHUB_REF_NAME と tauri.conf.json の version ($v) が一致しません。npm run bump -- <version> を使ってください"
+            exit 1
+          fi
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          tagName: v__VERSION__
+          releaseName: "v__VERSION__"
+          releaseBody: "インストール済みのアプリは次回起動時に自動で更新を通知します。"
+          releaseDraft: false
+          prerelease: false
